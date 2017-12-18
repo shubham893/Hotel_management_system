@@ -1,0 +1,106 @@
+CREATE  TABLE Family (
+	FRSSN numeric(9,0),
+	FRName varchar(255) NOT NULL,
+	Street varchar(255),
+	City varchar(255),
+	PIN numeric(6,0),
+	PRIMARY KEY (FRSSN)
+);
+CREATE  TABLE Family_Members (
+	Name varchar(255) NOT NULL,
+	Age numeric(3,0),
+	FRSSN numeric(9,0) REFERENCES Family(FRSSN) 
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (FRSSN,Name)
+);
+CREATE  TABLE Family_Contact (
+	Phone_No numeric(10,0),
+	FRSSN numeric(9,0) REFERENCES Family(FRSSN) 
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (FRSSN,Phone_No)
+);
+CREATE  TABLE Company (
+	Company_ID numeric(9,0),
+	Company_Name varchar(255) NOT NULL,
+	PRIMARY KEY (Company_Id)
+);
+CREATE  TABLE Company_Location ( 
+	Company_Location varchar(255) NOT NULL,
+	Company_ID numeric(9,0) REFERENCES Company(Company_ID)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (Company_ID,Company_Location)
+);
+CREATE  TABLE Company_Members ( 
+	SSN numeric(9,0),
+	Name varchar(255) NOT NULL,
+	Age numeric(3,0),
+	Designation varchar(255) NOT NULL,
+	Company_ID numeric(9,0) REFERENCES Company(Company_ID)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (SSN)
+);
+CREATE  TABLE Membership (
+	Discount numeric(2,2) NOT NULL,
+	Membership_Type varchar(255),
+	PRIMARY KEY (Membership_Type)
+);
+CREATE  TABLE Guest (
+	Guest_ID numeric(9,0),
+	Memebership_Type varchar(255) NOT NULL REFERENCES Membership(Membership_Type)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (Guest_Id)
+);
+CREATE  TABLE Room (
+	Room_No numeric(3,0),
+	Type varchar(255) NOT NULL,
+	Rate numeric(5,0) NOT NULL,
+	Capacity numeric(1,0) NOT NULL,
+	PRIMARY KEY (Room_No)
+);
+CREATE  TABLE Allotted (
+	Check_In_Date DATE NOT NULL,
+	Check_Out_Date DATE NOT NULL,
+	Guest_ID numeric(9,0) REFERENCES Guest(Guest_ID)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	Room_No numeric(3,0) REFERENCES Room(Room_No)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (Guest_ID,Room_No,Check_In_Date)
+);
+CREATE  TABLE Bill (
+	Bill_No numeric(6,0),
+	Date DATE NOT NULL,
+	Time TIME NOT NULL,
+	Paying_Method varchar(255) NOT NULL,
+	Guest_Id numeric(9,0) REFERENCES Guest(Guest_ID)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (Bill_No)
+);
+CREATE  TABLE Food (
+	Food_ID numeric(3,0),
+	Food_Name varchar(255) NOT NULL,
+	Food_Rate numeric(3,0) NOT NULL,
+	PRIMARY KEY (Food_ID)
+);
+CREATE  TABLE Bill_Conatins (
+	Time TIME,
+	Date DATE,
+	Quantity numeric(2,0),
+	Bill_No numeric(6,0) REFERENCES Bill(Bill_No)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	Food_ID numeric(3,0) REFERENCES Food(Food_ID)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (Bill_No,Food_ID)
+);
+CREATE  TABLE Facilities (
+	Facility_ID numeric(2,0),
+	Facility_Name varchar(255) NOT NULL,
+	Facility_Rate numeric(3,0),
+	PRIMARY KEY (Facility_ID)
+);
+CREATE  TABLE Bill_Includes(
+	Facility_ID numeric(2,0) REFERENCES Facilities(Facility_ID)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	Bill_No numeric(6,0) REFERENCES Bill(Bill_No)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (Bill_No,Facility_ID)
+);

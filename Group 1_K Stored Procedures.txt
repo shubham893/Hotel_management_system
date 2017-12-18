@@ -1,0 +1,96 @@
+Procedure 1:
+CREATE OR REPLACE FUNCTION hotel_billing.bill_calc(billid integer)
+  RETURNS numeric AS
+$BODY$
+declare
+x bill_conatins%rowtype;
+y bill_includes%rowtype;
+z allotted%rowtype;
+a numeric(3,0);
+b numeric(5,0);
+g numeric(9,0);
+m varchar(255);
+room_sum integer :=0;
+food_sum integer :=0;
+facility_sum integer :=0;
+disc numeric(2,2);
+ans numeric(6,2);
+begin
+for x in select * from bill_conatins where bill_no=billid
+loop
+select food_rate into a from food as f where f.food_id=x.food_id;
+food_sum := food_sum+ (x.quantity*a);
+end loop;
+for y in select * from bill_includes where bill_no=billid
+loop
+select facility_rate into a from facilities as l where l.facility_id=y.facility_id;
+facility_sum:= facility_sum+a;
+end loop;
+select guest_id into g from bill where bill_no=billid;
+for z in select * from allotted where guest_id=g
+loop
+select rate into b from room as j where j.room_no=z.room_no;
+room_sum := room_sum+((z.check_out_date-z.check_in_date)+1)*b ;
+end loop;
+select memebership_type into m from guest where guest_id=g;
+select discount into disc from membership where membership_type=m;
+ans:= (1-disc)*(food_sum+facility_sum+room_sum);
+return ans;
+end;
+$BODY$
+  LANGUAGE plpgsql;
+
+  
+Procedure 2:
+CREATE OR REPLACE FUNCTION hotel_billing.no_of_adults(id integer)
+  RETURNS integer AS
+$BODY$
+declare
+x family_members%rowtype; 
+y integer :=0;
+begin
+for x in select * from family_members where frssn=id
+loop
+if x.age>=18 then y:=y+1;
+end if;
+end loop;
+return y;
+end;
+$BODY$
+  LANGUAGE plpgsql;
+  
+ procedure 3
+ CREATE OR REPLACE FUNCTION hotel_billing.annual_survey(ini date, final date)
+  RETURNS SETOF hotel_billing.count AS
+$BODY$
+declare
+c count%rowtype;
+b bill%rowtype;
+x integer :=0;
+x1 integer :=0;
+comp company%rowtype;
+comm company_members%rowtype;
+begin
+for comp.company_id in select * from company
+loop
+x1:=0;
+for comm.ssn in select * from company_members where company_id=comp.company_id
+loop
+x:=0;
+for b in select * from bill where guest_id=comm.ssn
+loop
+if(b.date>ini and b.date<final)
+then x:=x+1;
+end if;
+end loop;
+x1:=x1+x;
+end loop;
+c.id=comp.company_id;
+c.counter=x1;
+return next c;
+end loop;
+return;
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  

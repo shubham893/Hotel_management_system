@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdlib.h>
+EXEC SQL BEGIN DECLARE SECTION;
+char name[30],query[100],dummy[100],buf[20],x1[25],x2[25],x3[25],**x4,**x5,**x6,**x7,**x8,x9[25],x10[25],x11[25], c,*try;
+int inp,inp1;
+char y[100];
+EXEC SQL END DECLARE SECTION;
+void executeQuery(char *query, int n_col){
+	printf("%s\n",query);
+	EXEC SQL PREPARE query_prep FROM :query;
+    	EXEC SQL DECLARE emp_cur CURSOR FOR query_prep;
+        EXEC SQL OPEN emp_cur;
+	if(n_col==6){
+        while ( sqlca.sqlcode == 0) {
+                EXEC SQL FETCH FROM emp_cur INTO :x1,:x2,:x3,:x9,:x10,:x11;     // add as many pointers as the projections
+                printf("%s %s %s %s %s %s\n",x1,x2,x3,x9,x10,x11);                       // add as many pointers as the projections
+		}
+	}	
+	else if(n_col==5){
+        while ( sqlca.sqlcode == 0) {
+                EXEC SQL FETCH FROM emp_cur INTO :x1,:x2,:x3,:x9,:x10;     // add as many pointers as the projections
+                printf("%s %s %s %s %s\n",x1,x2,x3,x9,x10);                       // add as many pointers as the projections
+		}
+	}
+	else if(n_col==4){
+        while ( sqlca.sqlcode == 0) {
+                EXEC SQL FETCH FROM emp_cur INTO :x1,:x2,:x3,:x9;     // add as many pointers as the projections
+                printf("%s %s %s %s\n",x1,x2,x3,x9);                       // add as many pointers as the projections
+		}
+	}
+	else if(n_col==3){
+        while ( sqlca.sqlcode == 0) {
+                EXEC SQL FETCH FROM emp_cur INTO :x1,:x2,:x3;     // add as many pointers as the projections
+                printf("%s %s %s\n",x1,x2,x3);                       // add as many pointers as the projections
+		}
+	}
+	else if(n_col==2){
+	while ( sqlca.sqlcode == 0) {
+                EXEC SQL FETCH FROM emp_cur INTO :x1,:x2;     // add as many pointers as the projections
+                printf("%s %s\n",x1,x2);                       // add as many pointers as the projections
+		}
+	}
+	else if(n_col==1){
+		while ( sqlca.sqlcode == 0) {
+                EXEC SQL FETCH FROM emp_cur INTO :x1;     // add as many pointers as the projections
+                printf("%s\n",x1);                       // add as many pointers as the projections
+		}
+	}
+	EXEC SQL CLOSE emp_cur;
+}
+void executeUpdate(){
+	int op;			
+	printf("give your query!\n");
+	scanf("%[^\n]*c",query);
+	printf("your query is %s\n",query);
+	EXEC SQL PREPARE mystmt FROM :query;
+}
+int main() {
+	EXEC SQL CONNECT TO "201401068@10.100.71.21" USER "201401068" USING "Shubham@1234";
+    	EXEC SQL set search_path to hotel_billing;
+	if(true){
+		printf("Enter 1 for insert update or delete \n insert 2 for running query with output \n");
+		int option;
+		scanf("%d",&option); 
+		c=getchar();   
+		if(option==1){
+			executeUpdate();
+		}
+		else if(option==2){
+			int n;
+			printf("give number of cols for output(max 6)");
+			scanf("%d",&n);
+			c=getchar();
+			printf("give your query\n");		    	
+			scanf("%[^\n]*c",query);
+		    	executeQuery(query,n);
+		}
+	}
+        return 0;
+}

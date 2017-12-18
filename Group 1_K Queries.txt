@@ -1,0 +1,36 @@
+Determine all visit dates of the guest whose id is 185
+Ans : select guest_id,date from bill where guest_id = 185
+
+Determine details of all the members of company "Pede Malesuada Vel LLP" who have visited on ”2011-10-31”
+Ans  : select ssn,name from company_members where( company_id in (select company_id from company where company_name = 'Pede Malesuada Vel LLP') and ssn in(select guest_id from bill where date = '2011-10-31')) 
+
+Print no. of children of guestid = 50
+Ans : select frssn,count(age) as no_of_children from family_members where (age < 18 and frssn = 50) group by frssn
+
+Print no. of adults of guestid = 50
+Ans : select frssn,count(age) as no_of_adults from family_members where (age > 18 and frssn = 50) group by frssn 
+
+Print all members of company "Hymenaeos LLP” who have visited the hotel
+Ans : select name from company_members where company_id = (select company_id from company where company_name = 'Hymenaeos LLP')
+
+Print details of all rooms occupied on “2011-08-24” 
+Ans: select * from room where room_no in (select room_no from allotted where check_in_date='2011-08-24')
+
+Determine membership and discount rate of guest whose bill  no is 34
+Ans : select discount,membership_type from membership as e1 join guest as e2 on e1.membership_type=e2.memebership_type where guest_id in (select guest_id from bill where bill_no = 34)
+
+Determine food name eaten by guestid=226
+Ans : select * from( (select food_id,date,time from bill_conatins where bill_no in (select bill_no from bill where guest_id=226)) as e1 join food as e2 on e1.food_id=e2.food_id)
+
+Print all the facilities used by guest of room no 15 on date 2011-04-24
+Ans : select facility_name,facility_rate from facilities where facility_id in(select facility_id from bill_includes where bill_no in (select bill_no from bill where guest_id in (select guest_id from allotted where (room_no = 15 and date = '2011-04-24'))))
+
+Determine total amount to be paid for bill no 403
+Ans:
+select bill_no,total_food_rate,facility_rate,discount,room_rate,((1-discount)*(total_food_rate+facility_rate+room_rate)) as amount_to_pay from((select bill_no,(quantity*food_rate) as total_food_rate from bill_conatins as e1 join food as e2 on e1.food_id = e2.food_id where bill_no = 403)as hp
+natural join
+(select bill_no,facility_rate from bill_includes as e3 join facilities as e4 on e3.facility_id=e4.facility_id where bill_no = 403) as bp
+natural join
+(select bill_no,discount from (select bill_no,memebership_type from bill as e5 join guest as e6 on e5.guest_id = e6.guest_id where bill_no = 403) as e7 join membership as e8 on e7.memebership_type=e8.membership_type) as hq
+natural join
+(select bill_no,(mul*rate)as room_rate from(select bill_no,((check_out_date - check_in_date)+1) as mul,room_no from bill as e11 join allotted as e12 on e11.guest_id = e12.guest_id where bill_no = 403) as e13 join room as e14 on e13.room_no = e14.room_no) as rt)
